@@ -1,0 +1,9 @@
+# roles/haproxy/vars/RedHat.yml
+#
+# Distribution-specific variables for RHEL, CentOS, ...
+---
+
+haproxy_packages:
+  - haproxy
+
+haproxy_service: haproxyd

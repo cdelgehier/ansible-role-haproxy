@@ -1,0 +1,22 @@
+# roles/haproxy/tasks/main.yml
+---
+
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+  tags: haproxy
+
+- name: Install packages
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items: "{{ haproxy_packages }}"
+  tags: haproxy
+
+- name: Ensure service is started
+  service:
+    name: "{{ haproxy_service }}"
+    state: started
+    enabled: true
+  tags: haproxy
