@@ -1,0 +1,80 @@
+# {{ ansible_managed }}
+global
+        log 127.0.0.1 local{{ haproxy_logs_facility }}
+        chroot {{ haproxy_global_chroot }}
+        
+        user haproxy
+        group haproxy
+        
+        daemon
+
+        stats socket {{ haproxy_global_socket }} mode 660 level admin
+        stats timeout 30s
+
+        ca-base {{ haproxy_global_cabase }}
+        crt-base {{ haproxy_global_crtbase }}
+
+        ssl-default-bind-options {{ haproxy_global_ssldefaultbindoptions }}
+        ssl-default-bind-ciphers {{ haproxy_global_ssldefaultbindciphers }}
+    
+        pidfile /run/haproxy.pid
+
+defaults
+        mode    {{ haproxy_default_mode }}
+        log     {{ haproxy_default_log }}
+        retries 3
+{% for op in haproxy_default_options %}
+        option  {{ op }}
+{% endfor %}
+{% for t in haproxy_default_timeouts %}
+        timeout {{ t }}
+{% endfor %}
+        default-server {{ haproxy_default_server }}
+{% for e in haproxy_default_errorfiles %}
+        errorfile {{ e }}
+{% endfor %}
+        default_backend {{ haproxy_default_backend }}
+
+
+listen stats {{ haproxy_default_stat_ip }}:{{ haproxy_default_stat_port}}
+        mode http
+        balance
+        stats                enable
+        stats uri            {{ haproxy_default_stat_uri }}
+        stats realm          Haproxy\ Statistics
+        stats auth           {{ haproxy_default_stat_user }}:{{ haproxy_default_stat_passwd }}
+        stats admin if TRUE
+
+
+################ FRONTENDS ################
+{% for name,value in haproxy_frontends.items() %}
+frontend {{ name }}
+    mode {{  value['mode'] }}
+{% for b in value['bind'] %}
+    bind {{ b }}
+{% endfor %}
+{% for o in value['options'] %}
+    {{ o }}
+{% endfor %}
+    
+    #-- ACLs --#
+    {{ value['acls'] }}
+
+
+    #-- Rediretions --#
+    {{ value['redirections'] }}
+
+    #-- Backends --#
+    
+
+{% endfor %}
+
+################ BACKENDS  ################
+
+{% for name,value in haproxy_backends.items() %}
+backend {{ name }}
+    mode {{  value['mode'] }}
+{% for o in value['options'] %}
+    {{ o }}
+{% endfor %}
+{% endfor %}

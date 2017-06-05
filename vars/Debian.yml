@@ -1,0 +1,5 @@
+# roles/haproxy/vars/Debian.yml
+#
+# Distribution-specific variables for Debian, Ubuntu, ...
+---
+haproxy_service: haproxy

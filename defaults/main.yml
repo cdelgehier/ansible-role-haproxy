@@ -1,4 +1,136 @@
 # roles/haproxy/defaults/main.yml
 ---
+#packages
+haproxy_packages:
+  - haproxy
+  - openssl
+  - ca-certificates
+
+#logs
+haproxy_logs_facility: 5
+haproxy_logs_directory: /var/log/haproxy
+
+#rsyslog
+haproxy_rsyslog_managed: false
+haproxy_rsyslog_template: rsyslog_haproxy.conf.j2
+haproxy_rsyslog_template_dest: /etc/rsyslog.d/haproxy.conf
+
+#logrotate
+haproxy_logrotate_managed: true
+haproxy_logrotate_template: haproxy.j2
+haproxy_logrotate_template_dest: /etc/logrotate.d/haproxy
+
+#errors files
+haproxy_errorfiles_managed: false
+haproxy_errors_directory: /etc/haproxy/
+haproxy_errors_source: errors
+
+#keepalived
+haproxy_HA: true
+haproxy_keepalived_package: keepalived
+haproxy_keepalived_interface: eth0
+haproxy_keepalived_notif: false
+haproxy_keepalived_notif_email_from: 
+haproxy_keepalived_auth_pass: "CHANGE_ME"
+haproxy_keepalived_notif_smtp_timeout: 30
+haproxy_keepalived_vrrpid: 80
+
+#hatop
+haproxy_hatop_install: true
+haproxy_hatop_source : "files/hatop"
+haproxy_hatop_path: "/usr/local/bin/hatop"
 
 
+#sysctl
+haproxy_sysctl_managed: false
+haproxy_sysctl_template_dest: 10-haproxy.conf
+
+#ssl
+haproxy_cabase: /etc/haproxy/certs
+haproxy_crtbase: /etc/haproxy/private
+
+#conf
+haproxy_template: haproxy.cfg.j2
+haproxy_template_dest: /etc/haproxy/haproxy.cfg
+haproxy_ip_to_bind: ['172.17.0.100']
+
+##global
+haproxy_global_chroot: /var/lib/haproxy
+haproxy_global_socket: /run/haproxy/admin.sock
+haproxy_global_cabase: /etc/haproxy/certs
+haproxy_global_crtbase: /etc/haproxy/private
+haproxy_global_ssldefaultbindoptions: "no-sslv3 no-tls-tickets force-tlsv12"
+haproxy_global_ssldefaultbindciphers: "AES128+EECDH:AES128+EDH"
+
+##default
+haproxy_default_mode: http
+haproxy_default_log: global
+haproxy_default_options:
+  - redispatch
+  - httplog clf
+  - log-separate-errors
+  - dontlognull
+  - log-health-checks
+  - http-server-close
+  - forwardfor except 127.0.0.0/8
+haproxy_default_timeouts:
+  - connect 5s
+  - client 20s
+  - server 45s
+  - queue 1m
+  - check 5s
+  - http-keep-alive 3s
+  - http-request 10s  # slowloris protection
+haproxy_default_server: "inter 3s fall 2 rise 2 slowstart 60s"
+haproxy_default_errorfiles:
+  - 400 /etc/haproxy/errors/400.http
+  - 403 /etc/haproxy/errors/403.http
+  - 408 /etc/haproxy/errors/408.http
+  - 429 /etc/haproxy/errors/429.http
+  - 500 /etc/haproxy/errors/500.http
+  - 502 /etc/haproxy/errors/502.http
+  - 503 /etc/haproxy/errors/503.http
+  - 504 /etc/haproxy/errors/504.http
+haproxy_default_backend: blocked
+
+##stat
+haproxy_default_stat_ip: 127.0.0.1
+haproxy_default_stat_port: 8998
+haproxy_default_stat_uri: /admin?stats
+haproxy_default_stat_user: stats
+haproxy_default_stat_passwd: "CHANGE_ME_AGAIN"
+
+#frontends
+#haproxy_frontends: {}
+haproxy_frontends: 
+  front_nossl:
+    mode: http
+    bind:
+      - 172.17.0.100:80
+    options:
+      - rspidel ^Server:.*$
+      - rspidel ^X-Powered-By:.*$
+    acls: |
+      # Path is / (useful when we need to redirect / to something else)
+      acl     acl_is_root path -i /
+
+      # Host header is haproxy.undertest.local
+      acl     acl_haproxy_undertest_local hdr(host) -i haproxy.undertest.local
+
+      # Destination port is 81
+      acl     acl_port_81 dst_port 81
+
+    redirections: |
+      # If match ACL haproxy.undertest.local AND acl_is_root
+      redirect code 301 location http://haproxy.undertest.local/sut/ if acl_haproxy_undertest_local acl_is_root
+      # redirect scheme https code 301 if !{ ssl_fc }
+      # redirect scheme https code 301 if { acl_haproxy_undertest_local } !{ ssl_fc }
+
+#backends
+haproxy_backends:
+  blocked:
+    mode: http
+    options:
+      - "errorfile 403 /etc/haproxy/errors/403.http"
+      - "tcp-request content reject"
+...

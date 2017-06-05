@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+
+{{ haproxy_logs_directory }}/haproxy*.log {
+    missingok
+    notifempty
+    sharedscripts
+    rotate 7
+    daily
+    compress
+    postrotate
+        reload rsyslog >/dev/null 2>&1 || true
+    endscript
+}
+

@@ -1,0 +1,25 @@
+# roles/haproxy/tasks/keepalived.yml
+---
+- name: Install packages
+  package:
+    name: "{{ haproxy_keepalived_package }}"
+    state: installed
+  tags: install
+
+- name: Ensure service is started
+  service:
+    name: keepalived
+    state: started
+    enabled: true
+  tags: install
+
+- name: templating HA configuration file
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: configure
+  notify: reload keepalived
+...

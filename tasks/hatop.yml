@@ -1,0 +1,19 @@
+# roles/haproxy/tasks/hatop.yml
+---
+#- name: Copy bin file
+#  copy:
+#    src: "{{ playbook_dir ~ '/files/hatop-0.7.7/bin/hatop' }}"
+#    dest: /usr/local/bin
+#    mode: 755
+#  tags: install
+
+- name: Add an alias command
+  lineinfile:
+    create: yes
+    dest: /etc/profile.d/hatop.sh
+    line: alias hatop='hatop -s /var/lib/haproxy/stats'
+  tags: install
+
+
+
+...

@@ -5,18 +5,83 @@
   with_first_found:
     - "{{ ansible_distribution }}.yml"
     - "{{ ansible_os_family }}.yml"
-  tags: haproxy
+  tags: install
 
 - name: Install packages
   package:
     name: "{{ item }}"
     state: installed
   with_items: "{{ haproxy_packages }}"
-  tags: haproxy
+  tags: install
 
 - name: Ensure service is started
   service:
     name: "{{ haproxy_service }}"
     state: started
     enabled: true
-  tags: haproxy
+  tags: install
+
+- name: Include the HA part
+  include: keepalived.yml
+  when: haproxy_HA
+
+- name: Copy of HAtop
+  include: hatop.yml
+  when: haproxy_hatop_install
+
+- name: Create haproxy's folder for error HTTP
+  file:
+    path: "{{ haproxy_errors_directory }}"
+    state: directory
+    mode: 0775
+  tags: install
+
+- name: Copy HTTP errors files
+  synchronize:
+    src: "{{ haproxy_errors_source }}"
+    dest: "{{ haproxy_errors_directory }}"
+  tags: install
+
+- name: Add net.ipv4.ip_nonlocal_bind in sysctl
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    sysctl_file: "{{ haproxy_sysctl_template_dest }}"
+    value: 1
+    #sysctl_set: yes
+    reload: yes
+  tags: install
+  when: haproxy_sysctl_managed
+
+- name:  Add a rsyslog configuration
+  template:
+    src: "{{ haproxy_rsyslog_template }}"
+    dest: "{{ haproxy_rsyslog_template_dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags: install
+  when: haproxy_rsyslog_managed
+  notify: reload rsyslog
+  
+
+- name:  Add a logrotate configuration
+  template:
+    src: "{{ haproxy_logrotate_template }}"
+    dest: "{{ haproxy_logrotate_template_dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags: install
+  when: haproxy_logrotate_managed
+
+- name:  Templating haproxy.cfg
+  template:
+    src: "{{ haproxy_template }}"
+    dest: "{{ haproxy_template_dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags: configure
+  notify: reload haproxy
+
+...
