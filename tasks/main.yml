@@ -35,12 +35,23 @@
     state: directory
     mode: 0775
   tags: install
+  when: haproxy_errorfiles_managed
+
+- name: Ensure rsync is present for synchronize
+  package:
+    name: rsync
+  tags: install
+  when: haproxy_errorfiles_managed
+
+   state: present
 
 - name: Copy HTTP errors files
+  when: haproxy_errorfiles_managed
   synchronize:
     src: "{{ haproxy_errors_source }}"
     dest: "{{ haproxy_errors_directory }}"
   tags: install
+  when: haproxy_errorfiles_managed
 
 - name: Add net.ipv4.ip_nonlocal_bind in sysctl
   sysctl:
@@ -83,5 +94,4 @@
     mode: '0644'
   tags: configure
   notify: reload haproxy
-
 ...
