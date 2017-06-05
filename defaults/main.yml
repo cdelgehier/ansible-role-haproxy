@@ -28,6 +28,8 @@ haproxy_errors_source: errors
 #keepalived
 haproxy_HA: true
 haproxy_keepalived_package: keepalived
+haproxy_keepalived_master_ip: 172.17.0.2
+haproxy_keepalived_auto_failback: false
 haproxy_keepalived_interface: eth0
 haproxy_keepalived_notif: false
 haproxy_keepalived_notif_email_from: 

@@ -9,7 +9,7 @@ global_defs {
    smtp_server {{ haproxy_keepalived_notif_smtp }}
    smtp_connect_timeout {{ haproxy_keepalived_notif_smtp_timeout }}
 {% endif %}
-   router_id {{ inventory_hostname }}
+   router_id {{ ansible_hostname }}
 }
 
 vrrp_script check_haproxy {
@@ -20,14 +20,25 @@ vrrp_script check_haproxy {
 
 
 vrrp_instance VIP_HAPROXY {
+{% if hostvars[inventory_hostname]['ansible_default_ipv4']['address'] == haproxy_keepalived_master_ip %}
     state MASTER
+    priority 100
+{% else %}
+    state BACKUP
+    priority 99
+{% endif %}
+{% if haproxy_keepalived_notif %}
+    smtp_alert
+{% endif %}
+{% if not haproxy_keepalived_auto_failback  %}
+    nopreempt
+{% endif %}
     interface {{ haproxy_keepalived_interface }}
     virtual_router_id {{ haproxy_keepalived_vrrpid }}
-    priority 100
     virtual_ipaddress {
-        {% for ip in haproxy_ip_to_bind %}
+{% for ip in haproxy_ip_to_bind %}
         {{ ip }}
-        {% endfor %}
+{% endfor %}
     }
 
     track_script {
@@ -38,6 +49,5 @@ vrrp_instance VIP_HAPROXY {
         auth_type AH
         auth_pass {{ haproxy_keepalived_auth_pass }}
     }
-
 }
 
