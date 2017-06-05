@@ -1,7 +1,9 @@
-# Test playbook for Ansible role bertvv.haproxy
+# Test playbook for Ansible role cdelgehier.haproxy
 ---
 
 - hosts: all
   become: true
   roles:
-    - role_under_test
+    - role: role_under_test
+      haproxy_logrotate_managed: true 
+      haproxy_errorfiles_managed: true 
