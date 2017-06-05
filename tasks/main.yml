@@ -40,13 +40,11 @@
 - name: Ensure rsync is present for synchronize
   package:
     name: rsync
+    state: present
   tags: install
   when: haproxy_errorfiles_managed
 
-   state: present
-
 - name: Copy HTTP errors files
-  when: haproxy_errorfiles_managed
   synchronize:
     src: "{{ haproxy_errors_source }}"
     dest: "{{ haproxy_errors_directory }}"
