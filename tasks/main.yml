@@ -51,14 +51,8 @@
   tags: install
   when: haproxy_errorfiles_managed
 
-- name: Add net.ipv4.ip_nonlocal_bind in sysctl
-  sysctl:
-    name: net.ipv4.ip_nonlocal_bind
-    sysctl_file: "{{ haproxy_sysctl_template_dest }}"
-    value: 1
-    #sysctl_set: yes
-    reload: yes
-  tags: install
+- name: Include the sysctl part
+  include: sysctl.yml
   when: haproxy_sysctl_managed
 
 - name:  Add a rsyslog configuration
@@ -67,12 +61,11 @@
     dest: "{{ haproxy_rsyslog_template_dest }}"
     owner: root
     group: root
-    mode: '0644'
+    mode:  0644
   tags: install
   when: haproxy_rsyslog_managed
-  notify: reload rsyslog
-  
-
+  notify: restart rsyslog
+ 
 - name:  Add a logrotate configuration
   template:
     src: "{{ haproxy_logrotate_template }}"
@@ -89,7 +82,7 @@
     dest: "{{ haproxy_template_dest }}"
     owner: root
     group: root
-    mode: '0644'
+    mode:  0644
     validate: haproxy -f %s -c -q
   tags: configure
   notify: reload haproxy
