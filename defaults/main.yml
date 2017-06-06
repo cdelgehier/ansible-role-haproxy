@@ -13,12 +13,13 @@ haproxy_logs_directory: /var/log/haproxy
 #rsyslog
 haproxy_rsyslog_managed: false
 haproxy_rsyslog_template: rsyslog_haproxy.conf.j2
-haproxy_rsyslog_template_dest: /etc/rsyslog.d/haproxy.conf
+haproxy_rsyslog_template_dest: /etc/rsyslog.d/49-haproxy.conf
 
 #logrotate
 haproxy_logrotate_managed: true
 haproxy_logrotate_template: haproxy.j2
 haproxy_logrotate_template_dest: /etc/logrotate.d/haproxy
+haproxy_logrotate_retention: 7
 
 #errors files
 haproxy_errorfiles_managed: false
@@ -32,7 +33,7 @@ haproxy_keepalived_master_ip: 172.17.0.2
 haproxy_keepalived_auto_failback: false
 haproxy_keepalived_interface: eth0
 haproxy_keepalived_notif: false
-haproxy_keepalived_notif_email_from: 
+haproxy_keepalived_notif_email_from: root@localhost
 haproxy_keepalived_auth_pass: "CHANGE_ME"
 haproxy_keepalived_notif_smtp_timeout: 30
 haproxy_keepalived_vrrpid: 80
@@ -45,7 +46,7 @@ haproxy_hatop_path: "/usr/local/bin/hatop"
 
 #sysctl
 haproxy_sysctl_managed: false
-haproxy_sysctl_template_dest: 10-haproxy.conf
+haproxy_sysctl_template_dest: /etc/sysctl.d/49-haproxy.conf
 
 #ssl
 haproxy_cabase: /etc/haproxy/certs
