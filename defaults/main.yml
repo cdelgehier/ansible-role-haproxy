@@ -128,8 +128,19 @@ haproxy_frontends:
       # redirect scheme https code 301 if !{ ssl_fc }
       # redirect scheme https code 301 if { acl_haproxy_undertest_local } !{ ssl_fc }
 
+    use_backends: |
+      # test backend
+      use_backend http_TEST_8000 if acl_haproxy_undertest_local
+
 #backends
 haproxy_backends:
+  http_TEST_8000:
+    mode: http
+    options:
+      - balance roundrobin
+      - server SUT1 172.17.0.2:8000 check
+      - server SUT2 172.17.0.3:8000 check
+    
   blocked:
     mode: http
     options:
