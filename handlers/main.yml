@@ -6,10 +6,10 @@
     name: "{{ haproxy_service }}"
     state: reloaded
 
-- name: reload rsyslog
+- name: restart rsyslog
   service:
     name: rsyslog
-    state: reloaded
+    state: restarted
 
 - name: reload keepalived
   service:
