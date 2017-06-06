@@ -1,0 +1,33 @@
+# roles/haproxy/tasks/sysctl.yml
+---
+#- name: Add net.ipv4.ip_nonlocal_bind in sysctl
+#  sysctl:
+#    name: net.ipv4.ip_nonlocal_bind
+#    sysctl_file: "{{ haproxy_sysctl_template_dest }}"
+#    value: 1
+#    sysctl_set: yes
+#    reload: yes
+#  tags: install
+#  when: haproxy_sysctl_managed
+- name: Generate kernel parameters config file
+  copy:
+    src: sysctl
+    dest: "{{ haproxy_sysctl_template_dest }}"
+    owner: root
+    group: root
+    mode:  0644
+  register: sysctl_register_config
+
+- name: Check sysctl command capabilities
+  shell: sysctl --help | grep -E '^\s+\-\-system\s+' || true
+  register: sysctl_register_system
+  when: sysctl_register_config|changed
+  check_mode: no
+
+- name: Apply kernel parameters if they were modified
+  command: '{{ "sysctl --system"
+               if (sysctl_register_system.stdout != "")
+               else ("sysctl --ignore --load " + sysctl_config_file) }}'
+  when: sysctl_register_config|changed
+
+...
