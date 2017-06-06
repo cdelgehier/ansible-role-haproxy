@@ -35,9 +35,9 @@ defaults
 {% endfor %}
         default_backend {{ haproxy_default_backend }}
 
-
-listen stats {{ haproxy_default_stat_ip }}:{{ haproxy_default_stat_port}}
+listen stats 
         mode http
+        bind {{ haproxy_default_stat_ip }}:{{ haproxy_default_stat_port}}
         balance
         stats                enable
         stats uri            {{ haproxy_default_stat_uri }}
@@ -58,14 +58,13 @@ frontend {{ name }}
 {% endfor %}
     
     #-- ACLs --#
-    {{ value['acls'] }}
-
+{{ value['acls'] }}
 
     #-- Rediretions --#
-    {{ value['redirections'] }}
+{{ value['redirections'] }}
 
     #-- Backends --#
-    
+{{ value['use_backends'] }}
 
 {% endfor %}
 
@@ -77,4 +76,5 @@ backend {{ name }}
 {% for o in value['options'] %}
     {{ o }}
 {% endfor %}
+
 {% endfor %}
