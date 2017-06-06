@@ -4,7 +4,7 @@
     missingok
     notifempty
     sharedscripts
-    rotate 7
+    rotate {{ haproxy_logrotate_retention }}
     daily
     compress
     postrotate
