@@ -45,7 +45,7 @@ haproxy_hatop_path: "/usr/local/bin/hatop"
 
 
 #sysctl
-haproxy_sysctl_managed: false
+haproxy_sysctl_managed: true
 haproxy_sysctl_template_dest: /etc/sysctl.d/49-haproxy.conf
 
 #ssl
