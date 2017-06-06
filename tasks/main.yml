@@ -90,6 +90,7 @@
     owner: root
     group: root
     mode: '0644'
+    validate: haproxy -f %s -c -q
   tags: configure
   notify: reload haproxy
 ...
